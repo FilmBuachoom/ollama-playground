@@ -55,9 +55,6 @@ services:
       - ./app/document/:/app/backend/data/docs
     ports:
       - ${OPEN_WEBUI_PORT}:8080
-    environment:
-      - 'OLLAMA_BASE_URL=http://ollama:11434'
-      - 'WEBUI_SECRET_KEY='
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
