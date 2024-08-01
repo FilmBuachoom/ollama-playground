@@ -16,20 +16,6 @@ x-gpu-config:
             capabilities: [gpu]
 
 services:
-  jupyter:
-    container_name: jupyter
-    build: ./app
-    restart: unless-stopped
-    volumes:
-      - ./app/:/opt/app/
-    environment:
-      - TZ=Asia/Bangkok
-    env_file:
-      - .env
-    ports:
-      - ${JUPYTER_PORT}:8888
-    command: ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
-  
   ollama:
     <<: *gpu-config
     image: ollama/ollama:latest
