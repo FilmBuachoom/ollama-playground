@@ -17,7 +17,7 @@ services:
   # Model provider
   ollama: 
     <<: *gpu-config
-    image: ollama/ollama:latest
+    image: ollama/ollama:${MODEL_STACK_VERSION}
     container_name: ollama
     expose:
       - ${OLLAMA_PORT}
@@ -28,7 +28,7 @@ services:
 
   # Custom RAG processing
   pipelines:
-    image: ghcr.io/open-webui/pipelines:main
+    image: ghcr.io/open-webui/pipelines:${OPEN_WEBUI_STACK_VERSION}
     container_name: pipelines
     ports:
       - ${PIPELINE_PORT}:9099
@@ -48,7 +48,7 @@ services:
       args:
         OLLAMA_BASE_URL: '/ollama'
       dockerfile: Dockerfile
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_STACK_VERSION}
     container_name: open-webui
     volumes:
       - open-webui:/app/backend/data
