@@ -3,8 +3,6 @@ version: '3.9'
 x-gpu-config:
   &gpu-config
   restart: unless-stopped
-  environment:
-    - TZ=Asia/Bangkok
   env_file:
     - .env
   deploy:
@@ -16,7 +14,8 @@ x-gpu-config:
             capabilities: [gpu]
 
 services:
-  ollama:
+  # Model provider
+  ollama: 
     <<: *gpu-config
     image: ollama/ollama:latest
     container_name: ollama
@@ -26,7 +25,22 @@ services:
       - ollama:/root/.ollama
     pull_policy: always
     tty: true
+
+  # Custom RAG processing
+  pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: pipelines
+    ports:
+      - ${PIPELINE_PORT}:9099
+    env_file:
+      - .env
+    volumes:
+      - pipelines:/app/pipelines
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
   
+  # Frontend
   open-webui:
     <<: *gpu-config
     build:
@@ -45,9 +59,12 @@ services:
       - host.docker.internal:host-gateway
     depends_on:
       - ollama
+      - pipelines
 
 volumes:
   ollama:
     name: ${COMPOSE_PROJECT_NAME}-ollama
+  pipelines:
+    name: ${COMPOSE_PROJECT_NAME}-pipelines
   open-webui:
     name: ${COMPOSE_PROJECT_NAME}-open-webui
