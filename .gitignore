@@ -3,7 +3,7 @@
 !.vscode/extensions.json
 
 # Other files
-.note
+note.txt
 
 # Python
 **/__pycache__
