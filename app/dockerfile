@@ -1,0 +1,40 @@
+# --------------------------------------- First image ---------------------------------------
+FROM nvidia/cuda:12.1.0-devel-ubuntu20.04 AS nvidia-cuda
+
+# --------------------------------------- Second image ---------------------------------------
+FROM python:3.11.9-slim AS python
+
+# Copy necessary files or binaries from the nvidia-cuda stage
+COPY --from=nvidia-cuda /usr/local/cuda /usr/local/cuda
+
+# ENV CUDA
+ENV PATH=/usr/local/cuda/bin:$PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# Set work directory
+WORKDIR /opt
+
+# Add python user
+RUN addgroup python && adduser --gecos "" --disabled-password --uid=9001 --ingroup=python python
+
+# Config python environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH="." \
+    PATH="${PATH}:/home/python/.local/bin"
+
+# Install Linux packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    dumb-init \
+    gcc \
+    g++ \
+    libpq-dev \
+    python3-dev \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+# Install Python package
+COPY requirements.txt .
+RUN pip install --no-cache-dir -qr requirements.txt && rm requirements.txt

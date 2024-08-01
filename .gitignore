@@ -1,0 +1,22 @@
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# Other files
+.note
+
+# Python
+**/__pycache__
+**/.ipynb_checkpoints
+
+# Environment file
+.env*
+!.env.example
+
+# Large media files
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
