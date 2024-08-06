@@ -28,26 +28,25 @@ services:
 
   # Custom RAG processing
   pipelines:
-    image: ghcr.io/open-webui/pipelines:${OPEN_WEBUI_STACK_VERSION}
+    <<: *gpu-config
+    build:
+      context: ./pipelines
+      dockerfile: Dockerfile
     container_name: pipelines
     ports:
       - ${PIPELINE_PORT}:9099
     env_file:
       - .env
     volumes:
-      - pipelines:/app/pipelines
+      - ./pipelines/python_script/:/app/pipelines/pipelines/
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - host.docker.internal:host-gateway
     restart: always
+    command: /bin/bash -c "./start.sh"
   
   # Frontend
   open-webui:
     <<: *gpu-config
-    build:
-      context: .
-      args:
-        OLLAMA_BASE_URL: '/ollama'
-      dockerfile: Dockerfile
     image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_STACK_VERSION}
     container_name: open-webui
     volumes:
@@ -61,10 +60,21 @@ services:
       - ollama
       - pipelines
 
+  # jupyter:
+  #   container_name: jupyter
+  #   build: ./app
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./app/:/opt/app/
+  #   environment:
+  #     - TZ=Asia/Bangkok
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - ${JUPYTER_PORT}:8888
+
 volumes:
   ollama:
     name: ${COMPOSE_PROJECT_NAME}-ollama
-  pipelines:
-    name: ${COMPOSE_PROJECT_NAME}-pipelines
   open-webui:
     name: ${COMPOSE_PROJECT_NAME}-open-webui

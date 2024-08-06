@@ -1,3 +1,6 @@
 llama-index==0.10.57
 llama-index-llms-ollama==0.2.2
+faiss-cpu==1.8.0
 jupyterlab==4.2.4
+pyserini==0.36.0
+torch==2.4.0

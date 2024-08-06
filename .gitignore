@@ -3,7 +3,10 @@
 !.vscode/extensions.json
 
 # Other files
+app/*
 note.txt
+*.drawio
+*.bkp
 
 # Python
 **/__pycache__
@@ -12,6 +15,9 @@ note.txt
 # Environment file
 .env*
 !.env.example
+
+# Notebook playground
+*.ipynb
 
 # Large media files
 *.mp4
