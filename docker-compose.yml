@@ -2,7 +2,7 @@ version: '3.9'
 
 x-gpu-config:
   &gpu-config
-  restart: unless-stopped
+  restart: always
   env_file:
     - .env
   deploy:
@@ -29,20 +29,16 @@ services:
   # Custom RAG processing
   pipelines:
     <<: *gpu-config
-    build:
-      context: ./pipelines
-      dockerfile: Dockerfile
+    image: ghcr.io/open-webui/pipelines:${OPEN_WEBUI_STACK_VERSION}
     container_name: pipelines
     ports:
       - ${PIPELINE_PORT}:9099
     env_file:
       - .env
     volumes:
-      - ./pipelines/python_script/:/app/pipelines/pipelines/
+      - ./pipelines/:/app/pipelines/
     extra_hosts:
       - host.docker.internal:host-gateway
-    restart: always
-    command: /bin/bash -c "./start.sh"
   
   # Frontend
   open-webui:
@@ -59,19 +55,6 @@ services:
     depends_on:
       - ollama
       - pipelines
-
-  # jupyter:
-  #   container_name: jupyter
-  #   build: ./app
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./app/:/opt/app/
-  #   environment:
-  #     - TZ=Asia/Bangkok
-  #   env_file:
-  #     - .env
-  #   ports:
-  #     - ${JUPYTER_PORT}:8888
 
 volumes:
   ollama:
