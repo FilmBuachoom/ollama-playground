@@ -1,22 +1,16 @@
 # import
-import os, sys, subprocess
+import os, subprocess
 
 # faiss indexer
 def run_pyserini_faiss_index(input_path, output_path):
+    print("Indexing ...")
     index_dir = "/app/pipelines/pipelines/data/index"
 
     # Check if the output directory exists
     if not os.path.exists(index_dir):
         print(f"Creating output directory at {index_dir}")
         os.makedirs(index_dir)
-
-    # # Check index file exist
-    # index_file_name = f"/data/index/{os.path.basename(input_path)}.xx"
-    # if os.path.exists(index_file_name):
-    #     print(f"{index_file_name} is exist.")
     
-    # else:
-    # Run the Pyserini FAISS indexing command
     command = [
         'python', '-m', 'pyserini.encode',
         'input', 

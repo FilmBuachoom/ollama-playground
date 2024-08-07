@@ -11,6 +11,7 @@ note.txt
 # Python
 **/__pycache__
 **/.ipynb_checkpoints
+**/failed/
 
 # Environment file
 .env*

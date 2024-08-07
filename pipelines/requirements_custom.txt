@@ -1,4 +1,3 @@
 # Custom libraries
 pyserini
 faiss-cpu==1.8.0
-jupyterlab==4.2.4
