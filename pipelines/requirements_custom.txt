@@ -1,2 +1,3 @@
 # Custom libraries
 faiss-cpu==1.8.0
+llama-index-embeddings-ollama
