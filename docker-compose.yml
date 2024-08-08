@@ -39,6 +39,8 @@ services:
       - ./pipelines/:/app/pipelines/
     extra_hosts:
       - host.docker.internal:host-gateway
+    depends_on:
+      - ollama
   
   # Frontend
   open-webui:

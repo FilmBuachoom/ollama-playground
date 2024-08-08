@@ -14,11 +14,17 @@ import os
 
 from pydantic import BaseModel
 
+from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.llms.ollama import Ollama
+from llama_index.core import Settings, ServiceContext
 from llama_index.core import StorageContext, load_index_from_storage
-from llama_index.core import VectorStoreIndex, get_response_synthesizer
+from llama_index.core import get_response_synthesizer
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.postprocessor import SimilarityPostprocessor
+
+# import utility functions
+from pipelines.utils.on_startup import check_index_files_exist
 
 
 class Pipeline:
@@ -41,10 +47,6 @@ class Pipeline:
         )
 
     async def on_startup(self):
-        from llama_index.embeddings.ollama import OllamaEmbedding
-        from llama_index.llms.ollama import Ollama
-        from llama_index.core import Settings, VectorStoreIndex, SimpleDirectoryReader
-
         Settings.embed_model = OllamaEmbedding(
             model_name=self.valves.LLAMAINDEX_EMBEDDING_MODEL_NAME,
             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
@@ -55,17 +57,21 @@ class Pipeline:
         )
 
         # This function is called when the server is started.
-        global documents, index, work_dir
+        global documents, index, work_dir, index_dir, storage_context, service_context
 
-        self.work_dir = "/app/pipelines"
+        self.work_dir   = "/app/pipelines"
+        self.index_dir  = f"{self.work_dir}/data/index"
 
-        # Indexing
-        self.documents = SimpleDirectoryReader(f"{self.work_dir}/data/document").load_data()
-        self.index = VectorStoreIndex.from_documents(self.documents)
-
-        # Persisting to disk
-        self.index.storage_context.persist(persist_dir=f"{self.work_dir}/data/index")
-        pass
+        # Service context
+        Settings.service_context = ServiceContext.from_defaults(embed_model=Settings.embed_model, llm=Settings.llm)
+        
+        # Check the index files exist in the given directory
+        self.storage_context = check_index_files_exist(
+            service_context=Settings.service_context, 
+            embed_model=Settings.embed_model, 
+            docs_dir=f"{self.work_dir}/data/document", 
+            index_dir=self.index_dir
+        )
 
     async def on_shutdown(self):
         # This function is called when the server is stopped.
@@ -80,29 +86,74 @@ class Pipeline:
         # print(messages)
         print(user_message)
 
-        # rebuild storage context
-        storage_context = StorageContext.from_defaults(persist_dir=f"{self.work_dir}/data/index")
+        # # Service context
+        # service_context = ServiceContext.from_defaults(embed_model=Settings.embed_model, llm=Settings.llm)
 
         # load index
-        load_index = load_index_from_storage(storage_context)
+        load_index = load_index_from_storage(self.storage_context, service_context=Settings.service_context)
 
-        # configure retriever
-        retriever = VectorIndexRetriever(index=load_index, similarity_top_k=3)
+        retriever   = load_index.as_retriever(similarity_top_k=5)
+        nodes       = retriever.retrieve(user_message)
+        for i in range(3):
+            print(f'Score:{nodes[i].score}')
+            print(f'Context:{nodes[i].text}')
+            print('='*100)
 
-        # configure response synthesizer
-        response_synthesizer = get_response_synthesizer()
+        # # # configure retriever
+        # # retriever = VectorIndexRetriever(index=load_index, similarity_top_k=3)
 
-        # assemble query engine
-        query_engine = RetrieverQueryEngine(
-            retriever=retriever,
-            response_synthesizer=response_synthesizer,
-            node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)]
-        )
+        # # # configure response synthesizer
+        # # response_synthesizer = get_response_synthesizer(response_mode="tree_summarize", verbose=True)
 
-        # query_engine = load_index.as_query_engine(streaming=True)
+        # # # assemble query engine
+        # # query_engine = RetrieverQueryEngine(
+        # #     retriever=retriever,
+        # #     response_synthesizer=response_synthesizer,
+        # #     node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)]
+        # # )
+        # USER_CHAT_TEMPLATE = '<start_of_turn>system\nYou are a question answering assistant. Answer the question as truthfully and helpfully as possible.คุณคือผู้ช่วยตอบคำถาม จงตอบคำถามอย่างถูกต้องและมีประโยชน์ที่สุด<end_of_turn>'
+        # MODEL_CHAT_TEMPLATE = '<start_of_turn>model\n{prompt}<end_of_turn>\n'
+        # promp = f'''
+        #         <s>[INST] <<SYS>>
+        #         You are a question answering assistant. Answer the question as truthful and helpful as possible
+        #         คุณคือผู้ช่วยตอบคำถาม จงตอบคำถามอย่างถูกต้องและมีประโยชน์ที่สุด
+        #         <</SYS>>
+
+        #         Answer the question based only on the following context:
+        #         {prompt}
+
+        #         [/INST]
+        #     '''
+        # tourism_prompt_template = """
+        #     {{- range $i, $_ := .Messages }}
+        #     {{- $last := eq (len (slice $.Messages $i)) 1 }}
+        #     {{- if or (eq .Role "user") (eq .Role "system") }}<start_of_turn>user
+        #     {{ .Content }}<end_of_turn>
+        #     {{ if $last }}<start_of_turn>model
+        #     {{ end }}
+        #     {{- else if eq .Role "assistant" }}<start_of_turn>model
+        #     {{ .Content }}{{ if not $last }}<end_of_turn>
+        #     {{ end }}
+        #     {{- end }}
+        #     {{- end }}
+        # """
+
+        # system_role = """You are a question answering assistant. Answer the question as truthfully and helpfully as possible.
+        # คุณคือผู้ช่วยตอบคำถาม จงตอบคำถามอย่างถูกต้องและมีประโยชน์ที่สุด"""
+
+        # messages = [
+        #     {"Role": "system", "Content": system_role},
+        #     {"Role": "user", "Content": user_message},
+        #     # {"Role": "assistant", "Content": "The top tourist attractions in Paris include the Eiffel Tower, the Louvre Museum, Notre-Dame Cathedral, and the Champs-Élysées."},
+        # ]
+
+        # for message in messages:
+        #     role = message["Role"]
+        #     content = message["Content"]
+        #     print(f"<start_of_turn>{role}\n{content}<end_of_turn>")
+
+        query_engine = load_index.as_query_engine(streaming=True)
         response = query_engine.query(user_message)
 
-        print(f"RESPONSE: {response}")
-
         # return response.response_gen
-        return response
+        return response.response_gen

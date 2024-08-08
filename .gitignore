@@ -12,6 +12,7 @@ note.txt
 **/__pycache__
 **/.ipynb_checkpoints
 **/failed/
+**/playground
 
 # Environment file
 .env*
