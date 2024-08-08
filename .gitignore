@@ -4,7 +4,6 @@
 
 # Other files
 **/data/
-app/*
 note.txt
 *.drawio
 *.bkp
@@ -17,9 +16,6 @@ note.txt
 # Environment file
 .env*
 !.env.example
-
-# Notebook playground
-*.ipynb
 
 # Large media files
 *.mp4
