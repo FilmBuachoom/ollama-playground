@@ -1,12 +1,32 @@
 # import
 import os
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext, StorageContext
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageContext
 from llama_index.core.ingestion import IngestionPipeline
-from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.node_parser import SentenceSplitter, TokenTextSplitter
+
+# Tramsformation function
+def transformation_func(embed_model, documents):
+    # defind values
+    chunk_size, chunk_overlap = 1024, 20
+
+    # Token test spliter
+    text_splitter = TokenTextSplitter(
+        separator=" ",
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        backup_separators=["\n"]
+    )
+
+    # Sentence spliter
+    node_parser = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+    # Transformer process
+    index = VectorStoreIndex.from_documents(documents, show_progress=True, transformations=[text_splitter, node_parser, embed_model])
+    return index
 
 
 # Check the index files exist in the given directory
-def check_index_files_exist(service_context, embed_model, docs_dir, index_dir):
+def check_index_files_exist(embed_model, docs_dir, index_dir):
     """Check if the specified files exist in the given directory."""
     files_to_check = [
         "default__vector_store.json",
@@ -27,27 +47,11 @@ def check_index_files_exist(service_context, embed_model, docs_dir, index_dir):
         documents = SimpleDirectoryReader(input_files=[f"{docs_dir}/allattractions_50.csv"]).load_data()
         print(f"Number of document(s): {len(documents)}")
 
-        pipeline = IngestionPipeline(
-            transformations=[
-                SentenceSplitter(chunk_size=512, chunk_overlap=20),
-                embed_model,
-            ],
-        )
-
-        nodes = pipeline.run(documents=documents)
-
-        # Create vector store index
-        vector_store_index = VectorStoreIndex.from_documents(documents, show_progress=True, service_context=service_context, node_parser=nodes)
-
-        # vector_store = FaissVectorStore(faiss_index=faiss_index)
-        # storage_context = StorageContext.from_defaults(vector_store=vector_store)
-        # index = VectorStoreIndex(nodes=nodes,storage_context=storage_context, service_context = service_context)
-
-        # # Indexing
-        # index = VectorStoreIndex.from_documents(documents)
+        # Transformer process
+        index = transformation_func(embed_model, documents)
 
         # Persisting to disk
-        vector_store_index.storage_context.persist(persist_dir=index_dir)
+        index.storage_context.persist(persist_dir=index_dir)
 
     # Storage index directory
     storage_context = StorageContext.from_defaults(persist_dir=index_dir)
