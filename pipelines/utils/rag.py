@@ -44,7 +44,7 @@ def create_prompt(user_message, vector_retriever):
     chat_text_qa_msgs = [
         (
             "system",
-            "You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response.",
+            "You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response. คุณคือไกด์นำเที่ยวที่ให้ข้อมูลที่ถูกต้องและเป็นประโยชน์โดยอิงจากเอกสารคำถามเท่านั้น และคืนค่าการอ้างอิงถึงเอกสารที่ใช้ในคำตอบของคุณ",
         ),
         ("user", qa_prompt_str),
     ]
@@ -54,7 +54,7 @@ def create_prompt(user_message, vector_retriever):
     chat_refine_msgs = [
         (
             "system",
-            "You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response.",
+            "You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response. คุณคือไกด์นำเที่ยวที่ให้ข้อมูลที่ถูกต้องและเป็นประโยชน์โดยอิงจากเอกสารคำถามเท่านั้น และคืนค่าการอ้างอิงถึงเอกสารที่ใช้ในคำตอบของคุณ",
         ),
         ("user", refine_prompt_str),
     ]
@@ -69,10 +69,11 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
     print(f"VectorIndexRetriever: {vector_retriever}")
 
     # Retriever result
-    docs = vector_retriever.retrieve(user_message)
+    relevance_docs = vector_retriever.retrieve(user_message)
+    print(relevance_docs)
     for i in range(top_k):
-        print(f'Score:{docs[i].score}')
-        print(f'Context:{docs[i].text}')
+        print(f'Score:{relevance_docs[i].score}')
+        print(f'Context:{relevance_docs[i].text}')
         print('='*100)
 
     # Get prompt
