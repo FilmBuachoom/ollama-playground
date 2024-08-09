@@ -70,14 +70,13 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
 
     # Retriever result
     relevance_docs = vector_retriever.retrieve(user_message)
-    print(relevance_docs[:top_k])
-    # for i in range(top_k):
-    #     print(f'Score:{relevance_docs[i].score}')
-    #     print(f'Context:{relevance_docs[i].text}')
-    #     print('='*100)
+    for i in range(top_k):
+        print(f'Score:{relevance_docs[i].score}')
+        print(f'Context:{relevance_docs[i].text}')
+        print('='*100)
 
     # Get prompt
-    text_qa_template, refine_template = create_prompt(user_message=user_message, vector_retriever=vector_retriever)
+    text_qa_template, refine_template = create_prompt(user_message=user_message, vector_retriever=relevance_docs[:top_k])
 
     # Configure response synthesizer
     response_synthesizer = get_response_synthesizer(
