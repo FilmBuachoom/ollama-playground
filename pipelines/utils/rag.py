@@ -79,7 +79,7 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
         print('='*100)
 
     # Get prompt
-    text_qa_template, refine_template = create_prompt(user_message=user_message, vector_retriever=relevance_docs[:top_k])
+    text_qa_template, refine_template = create_prompt(user_message=user_message, vector_retriever=format_relevance_docs)
 
     # Configure response synthesizer
     response_synthesizer = get_response_synthesizer(
