@@ -60,6 +60,7 @@ def create_prompt(user_message, vector_retriever):
         ("user", refine_prompt_str),
     ]
     refine_template = ChatPromptTemplate.from_messages(chat_refine_msgs)
+    print(refine_template)
 
     return text_qa_template, refine_template
 
