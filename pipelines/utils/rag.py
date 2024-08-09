@@ -70,7 +70,7 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
 
     # Retriever result
     relevance_docs = vector_retriever.retrieve(user_message)
-    print(relevance_docs[top_k])
+    print(relevance_docs[:top_k])
     # for i in range(top_k):
     #     print(f'Score:{relevance_docs[i].score}')
     #     print(f'Context:{relevance_docs[i].text}')
