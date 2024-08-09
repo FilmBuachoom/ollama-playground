@@ -57,7 +57,7 @@ def main_rag(service_context, index, top_k, user_message):
     # print(text_qa_template)
 
     # Retriever
-    vector_query_engine = retrieve_func(index, top_k, service_context, text_qa_template=None)
+    vector_query_engine = retrieve_func(index, top_k, user_message, service_context, text_qa_template=None)
 
     # Generation
     response = vector_query_engine.query(user_message)
