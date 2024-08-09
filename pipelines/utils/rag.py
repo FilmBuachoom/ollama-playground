@@ -49,6 +49,7 @@ def create_prompt(user_message, vector_retriever):
         ("user", qa_prompt_str),
     ]
     text_qa_template = ChatPromptTemplate.from_messages(chat_text_qa_msgs)
+    print(text_qa_template)
     
     # Refine Prompt
     chat_refine_msgs = [
@@ -69,7 +70,8 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
     print(f"VectorIndexRetriever: {vector_retriever}")
 
     # Retriever result
-    relevance_docs = vector_retriever.retrieve(user_message)
+    relevance_docs          = vector_retriever.retrieve(user_message)
+    format_relevance_docs   = "\n".join([f'{i}.Context:{relevance_docs[i].text}' for i in range(top_k)])
     for i in range(top_k):
         print(f'Score:{relevance_docs[i].score}')
         print(f'Context:{relevance_docs[i].text}')
