@@ -19,8 +19,6 @@ from llama_index.llms.ollama import Ollama
 from llama_index.core import Settings, ServiceContext
 from llama_index.core import load_index_from_storage
 
-from langchain import hub
-
 # import utility functions
 from pipelines.utils.on_startup import check_index_files_exist
 from pipelines.utils.rag        import main_rag
@@ -71,7 +69,6 @@ class Pipeline:
         
         # Check the index files exist in the given directory
         self.storage_context = check_index_files_exist(
-            service_context=Settings.service_context, 
             embed_model=Settings.embed_model, 
             docs_dir=f"{self.work_dir}/data/document", 
             index_dir=self.index_dir
@@ -94,12 +91,10 @@ class Pipeline:
         load_index = load_index_from_storage(self.storage_context, service_context=Settings.service_context)
 
         # RAG function
-        top_k = 5
         response = main_rag(
-            llm=Settings.llm,
-            embed_model=Settings.embed_model,
+            service_context=Settings.service_context,
             index=load_index, 
-            top_k=top_k, 
+            top_k=5, 
             user_message=user_message
         )
 
