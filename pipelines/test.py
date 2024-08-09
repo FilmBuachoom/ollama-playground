@@ -53,8 +53,8 @@ class Pipeline:
         Settings.llm = Ollama(
             model=self.valves.LLAMAINDEX_MODEL_NAME,
             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
-            temperature=0.75,
-            context_window=2048,
+            temperature=0.4,
+            context_window=4096,
             request_timeout=600
         )
 
