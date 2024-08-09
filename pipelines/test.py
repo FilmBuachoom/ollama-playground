@@ -94,7 +94,7 @@ class Pipeline:
         response = main_rag(
             service_context=Settings.service_context,
             index=load_index, 
-            top_k=5, 
+            top_k=2, 
             user_message=user_message
         )
 
