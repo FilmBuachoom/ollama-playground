@@ -48,7 +48,7 @@ class Pipeline:
             model_name=self.valves.LLAMAINDEX_EMBEDDING_MODEL_NAME,
             base_url=self.valves.LLAMAINDEX_OLLAMA_BASE_URL,
             temperature=0, 
-            max_tokens=512
+            max_tokens=1024
         )
         Settings.llm = Ollama(
             model=self.valves.LLAMAINDEX_MODEL_NAME,

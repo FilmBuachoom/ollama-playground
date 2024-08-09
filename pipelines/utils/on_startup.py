@@ -7,7 +7,7 @@ from llama_index.core.node_parser import SentenceSplitter, TokenTextSplitter
 # Tramsformation function
 def transformation_func(embed_model, documents):
     # defind values
-    chunk_size, chunk_overlap = 1024, 20
+    chunk_size, chunk_overlap = 512, 20
 
     # Token test spliter
     text_splitter = TokenTextSplitter(
