@@ -4,6 +4,53 @@ from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core import ServiceContext, get_response_synthesizer, ChatPromptTemplate
 from llama_index.core.query_engine import RetrieverQueryEngine
 
+# Prompt function
+def create_prompt():
+    qa_prompt_str = (
+        "Context information is below.\n"
+        "---------------------\n"
+        "{context_str}\n"
+        "Relevant Document: {relevant_document}\n"
+        "---------------------\n"
+        "Given the context information and the relevant document, and not prior knowledge, "
+        "answer the question: {query_str}\n"
+    )
+
+    refine_prompt_str = (
+        "We have the opportunity to refine the original answer "
+        "(only if needed) with some more context below.\n"
+        "------------\n"
+        "{context_msg}\n"
+        "Relevant Document: {relevant_document}\n"
+        "------------\n"
+        "Given the new context and the relevant document, refine the original answer to better "
+        "answer the question: {query_str}. "
+        "If the context isn't useful, output the original answer again.\n"
+        "Original Answer: {existing_answer}"
+    )
+
+    # Text QA Prompt
+    chat_text_qa_msgs = [
+        (
+            "system",
+            "You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response.",
+        ),
+        ("user", qa_prompt_str),
+    ]
+    text_qa_template = ChatPromptTemplate.from_messages(chat_text_qa_msgs)
+
+    # Refine Prompt
+    chat_refine_msgs = [
+        (
+            "system",
+            "You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response.",
+        ),
+        ("user", refine_prompt_str),
+    ]
+    refine_template = ChatPromptTemplate.from_messages(chat_refine_msgs)
+
+    return text_qa_template, refine_template
+
 # Retrieve function
 def retrieve_func(index, top_k, user_message, service_context, text_qa_template):
     # Configure retriever
@@ -17,12 +64,26 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
         print(f'Context:{docs[i].text}')
         print('='*100)
 
+    # Get prompt
+    text_qa_template, refine_template = create_prompt()
+
+    # Config prompt
+    context_str = "Here is the context from the document(s)..."
+
+    # Render the initial QA prompt
+    initial_prompt = text_qa_template.format(context_str=context_str, relevant_document=vector_retriever, query_str=user_message)
+    print(f"initial_prompt: {initial_prompt}")
+
+    # Render the refine prompt
+    refine_prompt = refine_template.format(context_msg="Additional context provided...",relevant_document=vector_retriever,query_str=user_message,existing_answer="Original answer to refine")
+    print(f"refine_prompt: {refine_prompt}")
+
     # Configure response synthesizer
     response_synthesizer = get_response_synthesizer(
         response_mode="refine",
         service_context=service_context,
-        # text_qa_template=text_qa_template,
-        # refine_template=refine_template,
+        text_qa_template=text_qa_template,
+        refine_template=refine_template,
         use_async=False,
         streaming=False,
     )
@@ -35,32 +96,12 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
 
 # Main function RAG
 def main_rag(service_context, index, top_k, user_message):
-
-    # #the context and question as a "user" message.
-    # chat_text_qa_msgs = [
-    #     (
-    #         """\
-    #         <start_of_turn>system
-    #         You are a tourism guide that provides accurate and helpful information based only on the following query documents. Always include references to the documents used in your response.<end_of_turn>
-    #         <start_of_turn>user
-    #         Context:
-    #         {context_str}
-            
-    #         Question:
-    #         {query_str}
-    #         <end_of_turn>
-    #         <start_of_turn>model
-    #         """
-    #     )
-    # ]
-    # text_qa_template = ChatPromptTemplate.from_messages(chat_text_qa_msgs)
-    # print(text_qa_template)
-
     # Retriever
     vector_query_engine = retrieve_func(index, top_k, user_message, service_context, text_qa_template=None)
 
     # Generation
     response = vector_query_engine.query(user_message)
     print(f"Response: {response}")
+    # response = "test"
 
     return str(response)
