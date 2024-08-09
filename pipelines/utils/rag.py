@@ -20,8 +20,8 @@ def create_prompt(user_message, vector_retriever):
     )
 
     # Render the initial QA prompt
-    initial_prompt = text_qa_template.format(context_str=context_str, relevant_document=vector_retriever, query_str=user_message)
-    print(f"initial_prompt: {initial_prompt}")
+    qa_prompt_str = qa_prompt_str.format(context_str=context_str, relevant_document=vector_retriever, query_str=user_message)
+    print(f"qa_prompt_str: {qa_prompt_str}")
 
     refine_prompt_str = (
         "We have the opportunity to refine the original answer "
@@ -37,8 +37,8 @@ def create_prompt(user_message, vector_retriever):
     )
 
     # Render the refine prompt
-    refine_prompt = refine_template.format(context_msg="Additional context provided...", relevant_document=vector_retriever, query_str=user_message, existing_answer="Original answer to refine")
-    print(f"refine_prompt: {refine_prompt}")
+    refine_prompt_str = refine_prompt_str.format(context_msg="Additional context provided...", relevant_document=vector_retriever, query_str=user_message, existing_answer="Original answer to refine")
+    print(f"refine_prompt_str: {refine_prompt_str}")
 
     # Text QA Prompt
     chat_text_qa_msgs = [
