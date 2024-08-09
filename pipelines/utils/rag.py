@@ -5,10 +5,17 @@ from llama_index.core import ServiceContext, get_response_synthesizer, ChatPromp
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 # Retrieve function
-def retrieve_func(index, top_k, service_context, text_qa_template):
+def retrieve_func(index, top_k, user_message, service_context, text_qa_template):
     # Configure retriever
     vector_retriever = VectorIndexRetriever(index=index, similarity_top_k=top_k)
     print(f"VectorIndexRetriever: {vector_retriever}")
+
+    # Retriever result
+    docs = vector_retriever.retrieve(user_message)
+    for i in range(top_k):
+        print(f'Score:{docs[i].score}')
+        print(f'Context:{docs[i].text}')
+        print('='*100)
 
     # Configure response synthesizer
     response_synthesizer = get_response_synthesizer(
@@ -23,13 +30,6 @@ def retrieve_func(index, top_k, service_context, text_qa_template):
     # Assemble query engine
     vector_query_engine = RetrieverQueryEngine(retriever=vector_retriever, response_synthesizer=response_synthesizer)
     print(f"RetrieverQueryEngine: {vector_retriever}")
-
-    # # Retriever result
-    # docs = vector_retriever.retrieve(user_message)
-    # for i in range(top_k):
-    #     print(f'Score:{docs[i].score}')
-    #     print(f'Context:{docs[i].text}')
-    #     print('='*100)
     
     return vector_query_engine
 
