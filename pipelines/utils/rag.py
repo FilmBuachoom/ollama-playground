@@ -5,7 +5,10 @@ from llama_index.core import ServiceContext, get_response_synthesizer, ChatPromp
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 # Prompt function
-def create_prompt():
+def create_prompt(user_message, vector_retriever):
+    # Config prompt
+    context_str = "Here is the context from the document(s)..."
+
     qa_prompt_str = (
         "Context information is below.\n"
         "---------------------\n"
@@ -15,6 +18,10 @@ def create_prompt():
         "Given the context information and the relevant document, and not prior knowledge, "
         "answer the question: {query_str}\n"
     )
+
+    # Render the initial QA prompt
+    initial_prompt = text_qa_template.format(context_str=context_str, relevant_document=vector_retriever, query_str=user_message)
+    print(f"initial_prompt: {initial_prompt}")
 
     refine_prompt_str = (
         "We have the opportunity to refine the original answer "
@@ -29,6 +36,10 @@ def create_prompt():
         "Original Answer: {existing_answer}"
     )
 
+    # Render the refine prompt
+    refine_prompt = refine_template.format(context_msg="Additional context provided...", relevant_document=vector_retriever, query_str=user_message, existing_answer="Original answer to refine")
+    print(f"refine_prompt: {refine_prompt}")
+
     # Text QA Prompt
     chat_text_qa_msgs = [
         (
@@ -38,7 +49,7 @@ def create_prompt():
         ("user", qa_prompt_str),
     ]
     text_qa_template = ChatPromptTemplate.from_messages(chat_text_qa_msgs)
-
+    
     # Refine Prompt
     chat_refine_msgs = [
         (
@@ -65,18 +76,7 @@ def retrieve_func(index, top_k, user_message, service_context, text_qa_template)
         print('='*100)
 
     # Get prompt
-    text_qa_template, refine_template = create_prompt()
-
-    # Config prompt
-    context_str = "Here is the context from the document(s)..."
-
-    # Render the initial QA prompt
-    initial_prompt = text_qa_template.format(context_str=context_str, relevant_document=vector_retriever, query_str=user_message)
-    print(f"initial_prompt: {initial_prompt}")
-
-    # Render the refine prompt
-    refine_prompt = refine_template.format(context_msg="Additional context provided...",relevant_document=vector_retriever,query_str=user_message,existing_answer="Original answer to refine")
-    print(f"refine_prompt: {refine_prompt}")
+    text_qa_template, refine_template = create_prompt(user_message=user_message, vector_retriever=vector_retriever)
 
     # Configure response synthesizer
     response_synthesizer = get_response_synthesizer(
