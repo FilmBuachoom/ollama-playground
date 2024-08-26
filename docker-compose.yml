@@ -2,7 +2,7 @@ version: '3.9'
 
 x-gpu-config:
   &gpu-config
-  # restart: always
+  restart: always
   env_file:
     - .env
   deploy:
