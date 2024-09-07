@@ -30,6 +30,7 @@ class Pipeline:
         LLAMAINDEX_OLLAMA_BASE_URL: str
         LLAMAINDEX_MODEL_NAME: str
         LLAMAINDEX_EMBEDDING_MODEL_NAME: str
+        TEXT_EMBEDDING_INFERENCE_BASE_URL: str
 
     def __init__(self):
         self.documents = None
@@ -48,7 +49,7 @@ class Pipeline:
         """This function is called when the server is started."""
         # setup llm
         Settings.embed_model = TextEmbeddingsInference(
-            base_url=self.valvesTEXT_EMBEDDING_INFERENCE_BASE_URL,
+            base_url=self.valves.TEXT_EMBEDDING_INFERENCE_BASE_URL,
             model_name="thenlper/gte-small",
             auth_token=None,
             timeout=120,
@@ -66,7 +67,7 @@ class Pipeline:
         global query_engine_tools, rewriting, agent
 
         # load retriever tool
-        query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").build_query_routing()
+        query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding")
 
         # load rewriting process
         rewriting = RewritingInput()
@@ -82,7 +83,7 @@ class Pipeline:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
         # print(messages)
         print(user_message)
-        query = rewriting.rewrite(query=user_message)
-        result = agent.chat(query)
+        # query = rewriting.rewrite(query=user_message)
+        result = agent.chat(user_message)
 
         return str(result.response)
