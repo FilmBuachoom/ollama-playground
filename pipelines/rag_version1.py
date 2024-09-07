@@ -63,7 +63,7 @@ class Pipeline:
         global retriever, rag_workflow
 
         # load retriever tool
-        retriever = VectorStoreManager(path_to_folder="/app/pipelines/embedding").build_query_routing()
+        retriever = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").build_query_routing()
 
         # build workflow
         rag_workflow = RAGWorkflow(timeout=30, verbose=False)
