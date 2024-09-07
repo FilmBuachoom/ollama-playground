@@ -67,7 +67,8 @@ class Pipeline:
         global query_engine_tools, rewriting, agent
 
         # load retriever tool
-        query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding")
+        query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
+        print(f">>> query_engine_tools: {query_engine_tools}")
 
         # load rewriting process
         rewriting = RewritingInput()
