@@ -88,4 +88,5 @@ class Pipeline:
         result = self.agent.stream_chat(query)
 
         # return str(result.response)
-        return result.print_response_stream()
+        # return result.print_response_stream()
+        return result.response_gen
