@@ -73,9 +73,14 @@ class VectorStoreManager:
 
 class RewritingInput:
     def __init__(self):
-        """Rewriting and Expanding user query."""
+        """Initialize VectorStoreManager with a path and top_k value."""
         self.llm = Settings.llm
         self.prompt_template = {
+            'check_question_prompt': (
+                "Classify the following text: '{query}' as a question or not. Respond only with 'Yes' "
+                "if it is a question, or 'No' if it is not a question."    
+            ),
+            
             'classify_prompt': (
                 "Given the user query, classify the main topic as either 'Other', 'Culture', or 'Attraction'. "
                 "Note that queries about suggestions, recommendations, or any topics that do not specifically relate "
@@ -106,26 +111,46 @@ class RewritingInput:
             }
         }
 
+    
+    async def validate_question(self, query: str):
+        "Entry point for validate input query, does the query is question."
+        # build prompt
+        check_question_prompt_tmpl = PromptTemplate(self.prompt_template["check_question_prompt"].format(query=query))
+
+        # classification
+        is_question = self.llm.predict(check_question_prompt_tmpl).strip()
+        
+        # return result
+        return is_question
+
+    
     async def rewrite(self, query: str):
         "Entry point for rewriting, triggered by a StartEvent with `query`."
-        if query is None:
-            return None
+        # check does the query is question
+        is_question = await self.validate_question(query=query)
+        print(f">>> Input query:\n\t{query}\n\n")
+        print(f">>> Does input is question:\n\t{is_question}\n\n")
+        if is_question == "No":
+            return query
             
         # classification the query with llm
         classification_prompt_tmpl = PromptTemplate(self.prompt_template["classify_prompt"].format(query=query))
         query_class = self.llm.predict(classification_prompt_tmpl).strip()
-        print(f">>> Input query:\n\t{query}\n\n")
         print(f">>> User query about:\n\t{query_class}\n\n")
-        if len(re.findall(r'\b(recommend(?:s|ed|ation)?|suggest(?:s|ion)?)\b', input, re.IGNORECASE)) != 0 and query_class != "Other":
+
+        # recheck classification
+        if len(re.findall(r'\b(recommend(?:s|ed|ation)?|suggest(?:s|ion)?)\b', query, re.IGNORECASE)) != 0 and query_class != "Other":
             query_class = 'Other'
-            print(f">>> User query about:\n\t{query_class}\n\n")
+            print(f">>> User query about (re-check):\n\t{query_class}\n\n")
             
-       # Generate question based on topic
+       # generate question based on topic
         if query_class in ['Attraction', 'Culture']:
             rewriting_prompt = PromptTemplate(self.prompt_template['rewriting_prompt'][query_class].format(query=query))
-            rewriting_query = self.llm.predict(rewriting_prompt).split("Question: ")[-1].strip()
+            rewriting_query = Settings.llm.predict(rewriting_prompt).split("Question: ")[-1].strip()
+            rewriting_query += ". Try to use tools first."
+            print(f">>> Rewriting and expanding query:\n\t{rewriting_query}\n\n")
         else:
-            rewriting_query = query
+            return query
 
         # return
         return rewriting_query
