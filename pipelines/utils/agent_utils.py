@@ -112,28 +112,26 @@ class RewritingInput:
         }
 
     
-    async def validate_question(self, query: str):
+    def validate_question(self, query: str):
         "Entry point for validate input query, does the query is question."
         # build prompt
         check_question_prompt_tmpl = PromptTemplate(self.prompt_template["check_question_prompt"].format(query=query))
-        print(f">>> check_question_prompt_tmpl:\n\t{check_question_prompt_tmpl}\n\n")
 
         # classification
         is_question = self.llm.predict(check_question_prompt_tmpl).strip()
-        print(f">>> Does input is question:\n\t{is_question}\n\n")
         
         # return result
         return is_question
 
     
-    async def rewrite(self, query: str):
+    def rewrite(self, query: str):
         "Entry point for rewriting, triggered by a StartEvent with `query`."
         # check does the query is question
-        # is_question = await self.validate_question(query=query)
-        # print(f">>> Input query:\n\t{query}\n\n")
-        # print(f">>> Does input is question:\n\t{is_question}\n\n")
-        # if is_question == "No":
-        #     return query
+        is_question = self.validate_question(query=query)
+        print(f">>> Input query:\n\t{query}\n\n")
+        print(f">>> Does input is question:\n\t{is_question}\n\n")
+        if is_question == "No":
+            return query
             
         # classification the query with llm
         classification_prompt_tmpl = PromptTemplate(self.prompt_template["classify_prompt"].format(query=query))
