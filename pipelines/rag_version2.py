@@ -70,10 +70,10 @@ class Pipeline:
         query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
 
         # load rewriting process
-        rewriting = RewritingInput()
+        self.rewriting = RewritingInput()
 
         # build agent
-        agent = ReActAgent.from_tools(query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=20)
+        self.agent = ReActAgent.from_tools(query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=20)
 
     async def on_shutdown(self):
         # This function is called when the server is stopped.
@@ -83,9 +83,9 @@ class Pipeline:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
         # print(messages)
         print(user_message)
-        query   = rewriting.rewrite(query=user_message)
-        result  = agent.chat(query)
-        # result = agent.stream_chat(user_message)
+        query   = self.rewriting.rewrite(query=user_message)
+        # result  = self.agent.chat(query)
+        result = self.agent.stream_chat(query)
 
-        return str(result.response)
-        # return result.print_response_stream()
+        # return str(result.response)
+        return result.print_response_stream()
