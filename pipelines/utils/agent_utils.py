@@ -147,7 +147,7 @@ class RewritingInput:
         if query_class in ['Attraction', 'Culture']:
             rewriting_prompt = PromptTemplate(self.prompt_template['rewriting_prompt'][query_class].format(query=query))
             rewriting_query = Settings.llm.predict(rewriting_prompt).split("Question: ")[-1].strip()
-            rewriting_query += ". Try to use tools first."
+            # rewriting_query += ". Try to use tools first."
             print(f">>> Rewriting and expanding query:\n\t{rewriting_query}\n\n")
         else:
             return query
