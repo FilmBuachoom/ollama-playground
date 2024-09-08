@@ -84,7 +84,8 @@ class Pipeline:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
         # print(messages)
         print(user_message)
-        # query = rewriting.rewrite(query=user_message)
-        result = agent.chat(user_message)
+        query   = rewriting.rewrite(query=user_message)
+        # result  = agent.chat(query)
+        result = agent.stream_chat(query)
 
-        return str(result.response)
+        return result.print_response_stream()
