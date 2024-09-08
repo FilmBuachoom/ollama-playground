@@ -119,6 +119,7 @@ class RewritingInput:
 
         # classification
         is_question = self.llm.predict(check_question_prompt_tmpl).strip()
+        print(f">>> Does input is question:\n\t{is_question}\n\n")
         
         # return result
         return is_question
