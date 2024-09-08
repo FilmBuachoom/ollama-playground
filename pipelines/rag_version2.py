@@ -84,8 +84,8 @@ class Pipeline:
         # print(messages)
         print(user_message)
         query   = rewriting.rewrite(query=user_message)
-        # result  = agent.chat(query)
-        result = agent.stream_chat(user_message)
+        result  = agent.chat(query)
+        # result = agent.stream_chat(user_message)
 
-        # return str(result.response)
-        return result.print_response_stream()
+        return str(result.response)
+        # return result.print_response_stream()
