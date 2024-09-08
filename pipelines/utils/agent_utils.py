@@ -116,6 +116,7 @@ class RewritingInput:
         "Entry point for validate input query, does the query is question."
         # build prompt
         check_question_prompt_tmpl = PromptTemplate(self.prompt_template["check_question_prompt"].format(query=query))
+        print(f">>> check_question_prompt_tmpl:\n\t{check_question_prompt_tmpl}\n\n")
 
         # classification
         is_question = self.llm.predict(check_question_prompt_tmpl).strip()
