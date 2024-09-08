@@ -64,11 +64,10 @@ class Pipeline:
         )
 
         # defind global variables
-        global query_engine_tools, rewriting, agent
+        global rewriting, agent
 
         # load retriever tool
         query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
-        print(f">>> query_engine_tools: {query_engine_tools}")
 
         # load rewriting process
         rewriting = RewritingInput()
@@ -84,7 +83,7 @@ class Pipeline:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
         # print(messages)
         print(user_message)
-        # query   = rewriting.rewrite(query=user_message)
+        query   = rewriting.rewrite(query=user_message)
         # result  = agent.chat(query)
         result = agent.stream_chat(user_message)
 

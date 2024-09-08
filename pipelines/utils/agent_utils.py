@@ -129,11 +129,11 @@ class RewritingInput:
     async def rewrite(self, query: str):
         "Entry point for rewriting, triggered by a StartEvent with `query`."
         # check does the query is question
-        is_question = await self.validate_question(query=query)
-        print(f">>> Input query:\n\t{query}\n\n")
-        print(f">>> Does input is question:\n\t{is_question}\n\n")
-        if is_question == "No":
-            return query
+        # is_question = await self.validate_question(query=query)
+        # print(f">>> Input query:\n\t{query}\n\n")
+        # print(f">>> Does input is question:\n\t{is_question}\n\n")
+        # if is_question == "No":
+        #     return query
             
         # classification the query with llm
         classification_prompt_tmpl = PromptTemplate(self.prompt_template["classify_prompt"].format(query=query))
