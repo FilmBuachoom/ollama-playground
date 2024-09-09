@@ -21,7 +21,7 @@ from llama_index.core import Settings
 from llama_index.core.agent import ReActAgent
 from llama_index.core.query_engine import RouterQueryEngine
 from llama_index.core.selectors import LLMSingleSelector, LLMMultiSelector
-from llama_index.core.response_synthesizers import TreeSummarize, CompactAndAccumulate
+from llama_index.core.response_synthesizers import TreeSummarize
 
 # import utility functions
 from pipelines.utils.agent_utils import VectorStoreManager, RewritingInput
@@ -79,7 +79,7 @@ class Pipeline:
         self.query_engine = RouterQueryEngine(
             selector=LLMSingleSelector.from_defaults(llm=Settings.llm), 
             query_engine_tools=query_engine_tools,
-            summarizer=CompactAndAccumulate,
+            summarizer=TreeSummarize,
             verbose=True
         )
 
@@ -89,6 +89,7 @@ class Pipeline:
 
     def pipe(self, user_message: str, model_id: str, messages: List[dict], body: dict) -> Union[str, Generator, Iterator]:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
+        pass
         # print(messages)
         print(user_message)
         result = self.query_engine.query(user_message)
