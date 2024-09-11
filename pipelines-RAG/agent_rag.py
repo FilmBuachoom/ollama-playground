@@ -70,7 +70,7 @@ class Pipeline:
         print(">>> Load index successfull.")
 
         # build agent
-        self.agent = ReActAgent.from_tools(query_engine_tools=query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=10)
+        self.agent = ReActAgent.from_tools(query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=10)
 
     async def on_shutdown(self):
         # This function is called when the server is stopped.
