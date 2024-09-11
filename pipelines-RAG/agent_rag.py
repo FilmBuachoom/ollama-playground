@@ -66,12 +66,11 @@ class Pipeline:
         print(">>> Settings up embedding model successfull.")
 
         # load retriever tool
-        global agent, query_engine_tools
-        self.query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
+        query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
         print(">>> Load index successfull.")
 
         # build agent
-        self.agent = ReActAgent.from_tools(query_engine_tools=self.query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=10)
+        self.agent = ReActAgent.from_tools(query_engine_tools=query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=10)
 
     async def on_shutdown(self):
         # This function is called when the server is stopped.
@@ -80,7 +79,7 @@ class Pipeline:
     def pipe(self, user_message: str, model_id: str, messages: List[dict], body: dict) -> Union[str, Generator, Iterator]:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
         # try to using agent without tools
-        result = agent.stream_chat(user_message)
+        result = self.agent.stream_chat(user_message)
         print(f"\t{result.print_response_stream()}")
         # return result
         return result.response_gen
