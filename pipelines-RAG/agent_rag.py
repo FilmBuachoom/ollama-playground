@@ -82,4 +82,4 @@ class Pipeline:
         result = self.agent.chat(user_message)
         # print(f"\t{result.print_response_stream()}")
         # return result
-        return result
+        return result.response
