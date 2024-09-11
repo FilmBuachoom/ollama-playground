@@ -1,28 +1,92 @@
 # import
 import os, re
-from llama_index.core import Settings, load_index_from_storage, StorageContext, PromptTemplate
+from llama_index.core import Settings, load_index_from_storage, StorageContext, PromptTemplate, SimpleDirectoryReader, VectorStoreIndex
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
+from llama_index.core.node_parser import TokenTextSplitter, SentenceSplitter
 
 
 # Main class
 class VectorStoreManager:
     def __init__(self, path_to_folder: str, top_k: int = 5):
         """Initialize VectorStoreManager with a path and top_k value."""
-        self.path_to_folder = path_to_folder
-        self.top_k = top_k
-        self.llm = Settings.llm
+        self.top_k          = top_k
+        self.llm            = Settings.llm
+        self.embed_model    = Settings.embed_model
+        self.raw_doc_path   = "/app/pipelines/data/raw"
+        self.vector_idx_1_path = os.path.join(path_to_folder, "multiple_chunk_size", "1024")
+        self.vector_idx_2_path = os.path.join(path_to_folder, "vector_store_index_amazing_th")
+
+    def vector_indexing(self, path_to_raw, documents):
+        """Indexing documents"""
+        print(">>> Indexing document ...")
+        if path_to_raw == "Lonely Planet Thailand-Lonely Planet.pdf":
+            # indexing lonely planet
+            use_page = {
+                "need_to_know": [23],
+                "first_time_th": [24, 25, 26],
+                "month_by_month": [31, 32, 33],
+                "understand_th": [i for i in range(704+1, 757+1)],
+                "survival_guild": [i for i in range(758+1, 787+1)]
+            }
+
+            # project documents
+            documents = [documents[i] for i in [page for key in use_page for page in use_page[key]]]
+
+            # chunk size
+            chunk_size, chunk_overlap = 1024, 32
+            persis_path = self.vector_idx_1_path
+
+        else:
+            # indexing amazing Thailand
+            chunk_size, chunk_overlap = 512, 32
+            persis_path = self.vector_idx_2_path
+
+        # # Token test spliter
+        # text_splitter = TokenTextSplitter(
+        #     separator=" ",
+        #     chunk_size=chunk_size,
+        #     chunk_overlap=chunk_overlap,
+        #     backup_separators=["\n"]
+        # )
+
+        # Sentence spliter
+        node_parser = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+        # Transformer process Vector Index for answering specific context questions
+        vector_index = VectorStoreIndex.from_documents(documents, show_progress=True, transformations=[node_parser, self.embed_model])
+
+        # persis vector index
+        vector_index.storage_context.persist(persist_dir=persis_path)
+        StorageContext.from_defaults(persist_dir=persis_path)
+
+    def load_document(self, path_to_raw):
+        """Load document"""
+        compose_path_to_raw = os.path.join(self.raw_doc_path, path_to_raw)
+        if os.path.isdir(compose_path_to_raw):
+            reader = SimpleDirectoryReader(input_dir=compose_path_to_raw)
+            
+        elif os.path.isfile(compose_path_to_raw):
+            reader = SimpleDirectoryReader(input_files=[compose_path_to_raw])
+            
+        self.vector_indexing(path_to_raw=path_to_raw, documents=reader.load_data()) 
 
     def load_vector_store_idx(self):
         """Load vector indices from different sources."""
         # Load from source 1 (Lonely Planet)
-        storage_context_1 = StorageContext.from_defaults(persist_dir=os.path.join(self.path_to_folder, "multiple_chunk_size", "1024"))
+        if not os.path.exists(self.vector_idx_1_path):
+            self.load_document(path_to_raw="Lonely Planet Thailand-Lonely Planet.pdf")
+
+        storage_context_1 = StorageContext.from_defaults(persist_dir=self.vector_idx_1_path)
         vector_store_index_1 = load_index_from_storage(storage_context_1)
-        query_eng_1 = vector_store_index_1.as_query_engine(similarity_top_k=self.top_k, llm=self.llm)
+        query_eng_1 = vector_store_index_1.as_query_engine(similarity_top_k=self.top_k, llm=self.llm, streaming=True)
 
         # Load from source 2 (Amazing TH)
-        storage_context = StorageContext.from_defaults(persist_dir=os.path.join(self.path_to_folder, "vector_store_index_amazing_th"))
+        if not os.path.exists(self.vector_idx_2_path):
+            self.load_document(path_to_raw="amazing_thailand")
+
+        storage_context = StorageContext.from_defaults(persist_dir=self.vector_idx_2_path)
         vector_store_index_2 = load_index_from_storage(storage_context)
-        query_eng_2 = vector_store_index_2.as_query_engine(similarity_top_k=self.top_k, llm=self.llm)
+        query_eng_2 = vector_store_index_2.as_query_engine(similarity_top_k=self.top_k, llm=self.llm, streaming=True)
 
         # Return both retrievers
         return query_eng_1, query_eng_2

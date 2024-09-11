@@ -2,7 +2,7 @@ version: '3.9'
 
 x-gpu-config:
   &gpu-config
-  restart: always
+  # restart: always
   env_file:
     - .env
   deploy:
@@ -26,28 +26,34 @@ services:
     pull_policy: always
     tty: true
 
-  # Embed model inference
-  embedding-inference:
-    <<: *gpu-config
-    image: ghcr.io/huggingface/text-embeddings-inference:turing-1.5
-    container_name: embedding-inference
-    ports:
-      - ${TEXT_EMBEDDING_INFERENCE_PORT}:80
-    volumes:
-      - embedding-inference:/data
-    pull_policy: always
+  # # Embed model inference
+  # embedding-inference:
+  #   <<: *gpu-config
+  #   image: ghcr.io/huggingface/text-embeddings-inference:turing-1.5
+  #   container_name: embedding-inference
+  #   ports:
+  #     - ${TEXT_EMBEDDING_INFERENCE_PORT}:80
+  #   volumes:
+  #     - embedding-inference:/data
+  #   pull_policy: always
 
   # Custom RAG processing
   pipelines:
     <<: *gpu-config
-    image: ghcr.io/open-webui/pipelines:${OPEN_WEBUI_STACK_VERSION}
+    build:
+      context: ./pipelines
+      dockerfile: Dockerfile
+      args:
+        USE_CUDA: "true"
+        USE_CUDA_VER: "cu121"
+    image: custom_build_pipelines
     container_name: pipelines
     ports:
       - ${PIPELINE_PORT}:9099
     env_file:
       - .env
     volumes:
-      - ./pipelines/:/app/pipelines/
+      - ./pipelines-RAG/:/app/pipelines/
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
