@@ -149,7 +149,7 @@ class RewritingInput:
                 "Given the user query, classify the main topic as either 'Other', 'Culture', or 'Attraction'. "
                 "Note that queries about suggestions, recommendations, or any topics that do not specifically relate "
                 "to social norms, traditions, etiquette, specific places, landmarks, or sightseeing points should be classified as 'Other'. "
-                "Queries about social norms, traditions, and etiquette fall under 'Culture.' "
+                "Queries about social norms, traditions, and etiquette fall under 'Culture' "
                 "Queries about specific places, landmarks, or sightseeing points fall under 'Attraction'. "
                 "Return only 'Other', 'Culture', or 'Attraction' based on the user's input.\n\n"
                 "Here is the user query: {query}\n\n"
