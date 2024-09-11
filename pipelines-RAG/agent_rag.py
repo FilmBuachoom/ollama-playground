@@ -66,7 +66,7 @@ class Pipeline:
         print(">>> Settings up embedding model successfull.")
 
         # load retriever tool
-        global query_engine_tools
+        global agent, query_engine_tools
         self.query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
         print(">>> Load index successfull.")
 
@@ -83,6 +83,7 @@ class Pipeline:
             # try to using agent without tools
             result = self.agent.stream_chat(user_message)
             print(">>> Using Agent.")
+            print(f"\t{result.print_response_stream()}")
             # return result
             return result.response_gen
         
