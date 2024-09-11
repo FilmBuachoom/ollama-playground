@@ -77,6 +77,7 @@ class Pipeline:
         except:
             # exception when agent can't responce 
             result = Settings.llm.stream_complete(user_message)
+            return result
         
         # return result
         return result.response_gen
