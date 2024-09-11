@@ -74,11 +74,14 @@ class Pipeline:
         try:
             # try to using agent without tools
             result = self.agent.stream_chat(user_message)
+            print(">>> Using Agent.")
+            # return result
+            return result.response_gen
+        
         except:
             # exception when agent can't responce 
-            result = Settings.llm.stream_complete(user_message)
-            print(result)
-            return result
+            result = Settings.llm.complete(user_message)
+            print(">>> Using default LLM.")
+            return result.text
         
-        # return result
-        return result.response_gen
+        
