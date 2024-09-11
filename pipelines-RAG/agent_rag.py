@@ -21,7 +21,7 @@ from llama_index.core import Settings
 from llama_index.core.agent import ReActAgent
 
 # import utility functions
-from pipelines.utils.agent_utils import VectorStoreManager
+from pipelines.utils.agent_utils import VectorStoreManager, RewritingInput
 
 
 class Pipeline:
@@ -69,6 +69,9 @@ class Pipeline:
         query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
         print(">>> Load index successfull.")
 
+        # load rewriting process
+        self.rewriting = RewritingInput()
+
         # build agent
         self.agent = ReActAgent.from_tools(query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=10)
 
@@ -78,8 +81,7 @@ class Pipeline:
 
     def pipe(self, user_message: str, model_id: str, messages: List[dict], body: dict) -> Union[str, Generator, Iterator]:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
-        # try to using agent without tools
-        result = self.agent.chat(user_message)
-        # print(f"\t{result.print_response_stream()}")
-        # return result
+        # try to using agent
+        query   = self.rewriting.rewrite(query=user_message)
+        result  = self.agent.chat(query)
         return result.response
