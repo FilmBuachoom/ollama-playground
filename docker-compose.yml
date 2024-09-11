@@ -26,17 +26,6 @@ services:
     pull_policy: always
     tty: true
 
-  # # Embed model inference
-  # embedding-inference:
-  #   <<: *gpu-config
-  #   image: ghcr.io/huggingface/text-embeddings-inference:turing-1.5
-  #   container_name: embedding-inference
-  #   ports:
-  #     - ${TEXT_EMBEDDING_INFERENCE_PORT}:80
-  #   volumes:
-  #     - embedding-inference:/data
-  #   pull_policy: always
-
   # Custom RAG processing
   pipelines:
     <<: *gpu-config
