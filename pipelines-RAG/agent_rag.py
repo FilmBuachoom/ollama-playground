@@ -7,7 +7,7 @@ license: MIT
 description: A pipeline for retrieving relevant information from a knowledge base using the Llama Index library with Ollama embeddings.
 requirements: llama-index, llama-index-llms-ollama, llama-index-embeddings-ollama
 """
-
+# import
 from typing import List, Union, Generator, Iterator
 from schemas import OpenAIChatMessage
 import os
@@ -19,6 +19,9 @@ from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings
 from llama_index.core.agent import ReActAgent
+
+# import utility functions
+from pipelines.utils.agent_utils import VectorStoreManager
 
 
 class Pipeline:
@@ -62,8 +65,13 @@ class Pipeline:
         )
         print(">>> Settings up embedding model successfull.")
 
+        # load retriever tool
+        global query_engine_tools
+        self.query_engine_tools = VectorStoreManager(path_to_folder="/app/pipelines/data/embedding").load_query_engine_tool()
+        print(">>> Load index successfull.")
+
         # build agent
-        self.agent = ReActAgent.from_tools(llm=Settings.llm, verbose=True, max_iterations=20)
+        self.agent = ReActAgent.from_tools(query_engine_tools=self.query_engine_tools, llm=Settings.llm, verbose=True, max_iterations=10)
 
     async def on_shutdown(self):
         # This function is called when the server is stopped.
