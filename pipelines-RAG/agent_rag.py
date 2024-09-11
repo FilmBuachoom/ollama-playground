@@ -79,7 +79,7 @@ class Pipeline:
     def pipe(self, user_message: str, model_id: str, messages: List[dict], body: dict) -> Union[str, Generator, Iterator]:
         """Typically, you would retrieve relevant information from your knowledge base and synthesize it to generate a response."""
         # try to using agent without tools
-        result = self.agent.stream_chat(user_message)
-        print(f"\t{result.print_response_stream()}")
+        result = self.agent.chat(user_message)
+        # print(f"\t{result.print_response_stream()}")
         # return result
-        return result.print_response_stream()
+        return result
