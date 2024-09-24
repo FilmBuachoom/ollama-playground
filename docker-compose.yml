@@ -10,7 +10,7 @@ x-gpu-config:
       reservations:
         devices:
           - driver: nvidia
-            count: 1
+            count: all
             capabilities: [gpu]
 
 services:
@@ -63,6 +63,17 @@ services:
     depends_on:
       - ollama
       - pipelines
+  
+  # text-embeddings-inference
+  text-embeddings-inference:
+    <<: *gpu-config
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    container_name: text-embeddings-inference
+    ports:
+      - 8080:80
+    volumes:
+      - embedding-inference:/data
+    pull_policy: always
 
 volumes:
   ollama:
