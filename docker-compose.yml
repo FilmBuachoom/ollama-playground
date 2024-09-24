@@ -70,7 +70,7 @@ services:
     image: ghcr.io/huggingface/text-embeddings-inference:1.5
     container_name: text-embeddings-inference
     ports:
-      - 8080:80
+      - 8081:80
     volumes:
       - embedding-inference:/data
     pull_policy: always
